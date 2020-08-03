@@ -12,6 +12,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final controller = TextEditingController();
+  bool isLoading = false;
 
   String baseCurrencyCode = 'NGN';
   String baseCurrencyName = 'Naira';
@@ -47,18 +48,25 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void convertCurrency(String base, String target, String amount) async {
     final _host = 'api.exchangerate.host';
-    final _path = 'convert?from=$base&to=$target&amount=$amount';
+    final _path = 'convert';
 
-    final Map<String, String> _headers = {'Accept': 'application/json'};
+    final uri = Uri.https(
+      _host,
+      _path,
+      {'from': base, 'to': target, 'amount': amount},
+    );
 
-    print('here');
-    final uri = Uri.https(_host, _path);
-    final results = await http.get(uri, headers: _headers);
+    setState(() {
+      isLoading = true;
+    });
+
+    final results = await http.get(uri);
     final jsonObject = json.decode(results.body);
 
-    print('done');
-    targetAmount = jsonObject['result'].toStringAsFixed();
-    print(targetAmount);
+    setState(() {
+      isLoading = false;
+      targetAmount = jsonObject['result'].toString();
+    });
   }
 
   @override
@@ -214,14 +222,16 @@ class _HomeScreenState extends State<HomeScreen> {
         child: CircleAvatar(
           radius: 35.0,
           backgroundColor: Colors.white,
-          child: IconButton(
-            iconSize: 48.0,
-            icon: Icon(Icons.arrow_downward),
-            onPressed: () {
-              convertCurrency(
-                  baseCurrencyCode, targetCurrencyCode, controller.text ?? 0);
-            },
-          ),
+          child: isLoading
+              ? CircularProgressIndicator()
+              : IconButton(
+                  iconSize: 48.0,
+                  icon: Icon(Icons.arrow_downward),
+                  onPressed: () {
+                    convertCurrency(baseCurrencyCode, targetCurrencyCode,
+                        controller.text ?? 0);
+                  },
+                ),
         ),
       ),
     );
