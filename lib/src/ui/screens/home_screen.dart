@@ -60,18 +60,24 @@ class _HomeScreenState extends State<HomeScreen> {
       isLoading = true;
     });
 
-    final results = await http.get(uri);
+    final results = await http.get(uri).timeout(
+          Duration(seconds: 15),
+        );
+
     final jsonObject = json.decode(results.body);
 
     setState(() {
       isLoading = false;
-      targetAmount = jsonObject['result'].toString();
+      targetAmount = jsonObject['result'].toStringAsFixed(2);
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text('Currency Converter'),
+      ),
       body: SafeArea(
         child: Stack(
           children: <Widget>[
