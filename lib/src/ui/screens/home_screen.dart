@@ -61,8 +61,11 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     final results = await http.get(uri).timeout(
-          Duration(seconds: 15),
-        );
+      Duration(seconds: 15),
+      onTimeout: () {
+        return null;
+      },
+    );
 
     final jsonObject = json.decode(results.body);
 
